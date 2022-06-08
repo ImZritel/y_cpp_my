@@ -97,7 +97,7 @@ public:
                 }
             });
 
-        //delete matched_documents by the logic of ff
+        //add filtered matched_documents to result
         map<int, DocumentStatus> statuses;
         for (const auto& doc : matched_documents) {
             statuses[doc.id] = documents_.at(doc.id).status;
@@ -114,12 +114,10 @@ public:
     }
 
     //*****************************
-    vector<Document> FindTopDocuments(const string& raw_query) const {
-
-        auto ff = [](int document_id, DocumentStatus status, int rating) { return status == DocumentStatus::ACTUAL; };
-        vector<Document> filtered_docs = FindTopDocuments(raw_query, ff);
-        return filtered_docs;
+    vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus status = DocumentStatus::ACTUAL) const {
+        return FindTopDocuments(raw_query, [status](int document_id, DocumentStatus status_to_compare, int rating) { return status_to_compare == status; });
     }
+
 
     int GetDocumentCount() const {
         return static_cast<int>(documents_.size());
@@ -237,9 +235,7 @@ private:
             }
             const double inverse_document_freq = ComputeWordInverseDocumentFreq(word);
             for (const auto [document_id, term_freq] : word_to_document_freqs_.at(word)) {
-
                 document_to_relevance[document_id] += term_freq * inverse_document_freq;
-
             }
         }
 
