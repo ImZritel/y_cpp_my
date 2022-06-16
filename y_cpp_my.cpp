@@ -273,6 +273,121 @@ TODO:
      орректное вычисление релевантности найденных документов.
 */
 
+// =============================================================
+// TESTING framework
+// =============================================================
+// Defining of output operator<<
+template <typename t1, typename t2>
+ostream& operator<<(ostream& out, pair<t1, t2> p) {
+    out << p.first << ": ";
+    out << p.second;
+    return out;
+}
+/*
+template <typename container_type>
+ostream& operator<<(ostream& out, const container_type& container) {
+    for (auto el : container) {
+        bool first = true;
+        if (!first) {
+            out << ", ";
+        }
+        out << el;
+        first = false;
+    }
+    return out;
+}
+*/
+template <typename el_type>
+ostream& operator<<(ostream& out, vector<el_type> v) {
+    out << "["s;
+    bool first = true;
+    for (auto el : v) {
+
+        if (!first) {
+            out << ", "s;
+        }
+        out << el;
+        first = false;
+    }
+    out << "]"s;
+    return out;
+}
+
+template <typename el_type>
+ostream& operator<<(ostream& out, set<el_type> s) {
+    out << "{"s;
+    bool first = true;
+    for (auto el : s) {
+
+        if (!first) {
+            out << ", "s;
+        }
+        out << el;
+        first = false;
+    }
+    out << "}"s;
+    return out;
+}
+
+template <typename t1, typename t2>
+ostream& operator<<(ostream& out, map<t1, t2> m) {
+    out << "{"s;
+    bool first = true;
+    for (auto el : m) {
+
+        if (!first) {
+            out << ", "s;
+        }
+        out << el;
+        first = false;
+    }
+    out << "}"s;
+    return out;
+}
+
+//template functions and macroses
+template <typename T, typename U>
+void AssertEqualImpl(const T& t, const U& u, const string& t_str, const string& u_str, const string& file,
+    const string& func, unsigned line, const string& hint) {
+    if (t != u) {
+        cout << boolalpha;
+        cout << file << "("s << line << "): "s << func << ": "s;
+        cout << "ASSERT_EQUAL("s << t_str << ", "s << u_str << ") failed: "s;
+        cout << t << " != "s << u << "."s;
+        if (!hint.empty()) {
+            cout << " Hint: "s << hint;
+        }
+        cout << endl;
+        abort();
+    }
+}
+
+#define ASSERT_EQUAL(a, b) AssertEqualImpl((a), (b), #a, #b, __FILE__, __FUNCTION__, __LINE__, ""s)
+
+#define ASSERT_EQUAL_HINT(a, b, hint) AssertEqualImpl((a), (b), #a, #b, __FILE__, __FUNCTION__, __LINE__, (hint))
+
+
+void AssertImpl(bool value, const string& expr_str, const string& file, const string& func, unsigned line,
+    const string& hint) {
+    if (!value) {
+        cout << file << "("s << line << "): "s << func << ": "s;
+        cout << "ASSERT("s << expr_str << ") failed."s;
+        if (!hint.empty()) {
+            cout << " Hint: "s << hint;
+        }
+        cout << endl;
+        abort();
+    }
+}
+
+#define ASSERT(expr) AssertImpl(!!(expr), #expr, __FILE__, __FUNCTION__, __LINE__, ""s)
+
+#define ASSERT_HINT(expr, hint) AssertImpl(!!(expr), #expr, __FILE__, __FUNCTION__, __LINE__, (hint))
+// =============================================================
+// END OF TESTING framework
+// =============================================================
+
+
 // “ест провер€ет, что поискова€ система исключает стоп-слова при добавлении документов
 void TestExcludeStopWordsFromAddedDocumentContent() {
     const int doc_id = 42;
@@ -284,9 +399,11 @@ void TestExcludeStopWordsFromAddedDocumentContent() {
         SearchServer server;
         server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
         const auto found_docs = server.FindTopDocuments("in"s);
-        assert(found_docs.size() == 1);
+        //assert(found_docs.size() == 1);
+        ASSERT_EQUAL(found_docs.size(), 1);
         const Document& doc0 = found_docs[0];
-        assert(doc0.id == doc_id);
+        //assert(doc0.id == doc_id);
+        ASSERT_EQUAL(doc0.id, doc_id);
     }
 
     // «атем убеждаемс€, что поиск этого же слова, вход€щего в список стоп-слов,
@@ -296,13 +413,10 @@ void TestExcludeStopWordsFromAddedDocumentContent() {
         server.SetStopWords("in the the big brown deogi named shen city"s);
         server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
         server.AddDocument(doc_id + 1, "the big brown deogi named shen city"s, DocumentStatus::ACTUAL, { 0, 1, 2 });
-        assert(server.FindTopDocuments("in"s).empty());
+        //assert(server.FindTopDocuments("in"s).empty());
+        ASSERT(server.FindTopDocuments("in"s).empty());
     }
 }
-
-/*
-–азместите код остальных тестов здесь
-*/
 
 void TestMinusWords() {
     const int doc_id = 42;
@@ -315,7 +429,8 @@ void TestMinusWords() {
         server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
         server.AddDocument(doc_id + 1, "the big brown deogi named shen city"s, DocumentStatus::ACTUAL, {0, 1, 2});
         const auto found_docs = server.FindTopDocuments("city"s);
-        assert(found_docs.size() == 2);
+        //assert(found_docs.size() == 2);
+        ASSERT_EQUAL(found_docs.size(), 2);
     }
 
     {
@@ -324,9 +439,11 @@ void TestMinusWords() {
         server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
         server.AddDocument(doc_id + 1, "the big brown deogi named shen city"s, DocumentStatus::ACTUAL, { 0, 1, 2 });
         const auto found_docs = server.FindTopDocuments("city -big"s);
-        assert(found_docs.size() == 1);
+        //assert(found_docs.size() == 1);
+        ASSERT_EQUAL(found_docs.size(), 1);
         const Document& doc0 = found_docs[0];
-        assert(doc0.id == doc_id);
+        //assert(doc0.id == doc_id);
+        ASSERT_EQUAL(doc0.id, doc_id);
     }
 }
 
@@ -344,9 +461,12 @@ void TestRelevance() {
         server.AddDocument(1, "d e f g k l m"s, DocumentStatus::ACTUAL, { 0, 3, 2 });
         server.AddDocument(2, "e f g z"s, DocumentStatus::ACTUAL, { 0, 31, 32 });
         const auto found_docs = server.FindTopDocuments("e -c"s);
-        assert(found_docs.size() == 2);
-        assert(found_docs[0].id == 2);
-        assert(found_docs[1].id == 1);
+        //assert(found_docs.size() == 2);
+        ASSERT_EQUAL(found_docs.size(), 2);
+        //assert(found_docs[0].id == 2);
+        ASSERT_EQUAL(found_docs[0].id, 2);
+        //assert(found_docs[1].id == 1);
+        ASSERT_EQUAL(found_docs[1].id, 1);
     }
 
     {
@@ -358,14 +478,13 @@ void TestRelevance() {
         server.AddDocument(1, "d e f g k l m"s, DocumentStatus::ACTUAL, { 0, 1, 2 });
         server.AddDocument(2, "e f g z"s, DocumentStatus::ACTUAL, { 0, 1, 2 });
         const auto found_docs = server.FindTopDocuments("e f"s);
-        assert(found_docs.size() == 4);
-        assert(found_docs[0].id == 2);
-        assert(found_docs[1].id == 0);
-        assert(found_docs[2].id == 1);
-        assert(found_docs[3].id == 43);
+        ASSERT_EQUAL(found_docs.size(), 4);
+        ASSERT_EQUAL(found_docs[0].id, 2);
+        ASSERT_EQUAL(found_docs[1].id, 0);
+        ASSERT_EQUAL(found_docs[2].id, 1);
+        ASSERT_EQUAL(found_docs[3].id, 43);
     }
 }
-
 
 void TestRating() {
     const int doc_id = 42;
@@ -381,9 +500,9 @@ void TestRating() {
         server.AddDocument(1, "d e f g k l m"s, DocumentStatus::ACTUAL, { 0, -30, 2 });
         server.AddDocument(2, "e f g z"s, DocumentStatus::ACTUAL, { 0, 31, 32 });
         const auto found_docs = server.FindTopDocuments("e -c"s);
-        assert(found_docs.size() == 2);
-        assert(found_docs[0].rating == 21);
-        assert(found_docs[1].rating == -9);
+        ASSERT_EQUAL(found_docs.size(), 2);
+        ASSERT_EQUAL(found_docs[0].rating, 21);
+        ASSERT_EQUAL(found_docs[1].rating, -9);
     }
 }
 
@@ -402,13 +521,13 @@ void TestMatching() {
         string q32 = " deogi -brown";
         const auto found_docs = server.MatchDocument(q1, 42);
         tuple<vector<string>, DocumentStatus> ans1 = { {"city"s}, DocumentStatus::ACTUAL };
-        assert(found_docs == ans1);
+        ASSERT(found_docs==ans1);
         const auto found_docs2 = server.MatchDocument(q2, 43);
         tuple<vector<string>, DocumentStatus> ans2 = { {}, DocumentStatus::IRRELEVANT };
-        assert(found_docs2 == ans2);
+        ASSERT(found_docs2==ans2);
         const auto found_docs3 = server.MatchDocument(q32, 43);
         tuple<vector<string>, DocumentStatus> ans3 = { {}, DocumentStatus::IRRELEVANT };
-        assert(found_docs2==ans3);
+        ASSERT(found_docs3==ans3);
     }
 
     //tuple<vector<string>, DocumentStatus> MatchDocument(const string & raw_query, int document_id)
@@ -429,9 +548,9 @@ void TestPredicateFiltering() {
         server.AddDocument(1, "d e f g k l m"s, DocumentStatus::ACTUAL, { 0, -30, 2 });
         server.AddDocument(2, "e f g z x"s, DocumentStatus::ACTUAL, { 0, 31, 32 });
         const auto found_docs = server.FindTopDocuments("e"s, [](const int& id, const DocumentStatus& ds, const int& rating) {return id > 1; });
-        assert(found_docs.size() == 2);
-        assert(found_docs[0].id == 43);
-        assert(found_docs[1].id == 2);
+        ASSERT_EQUAL(found_docs.size(), 2);
+        ASSERT_EQUAL(found_docs[0].id, 43);
+        ASSERT_EQUAL(found_docs[1].id, 2);
     }
 
     {
@@ -443,9 +562,9 @@ void TestPredicateFiltering() {
         server.AddDocument(1, "d e f g k l m"s, DocumentStatus::BANNED, { 0, -30, 2 });
         server.AddDocument(2, "e f g z x"s, DocumentStatus::REMOVED, { 0, 31, 32 });
         const auto found_docs = server.FindTopDocuments("e"s, [](const int& id, const DocumentStatus& ds, const int& rating) {return static_cast<int>(ds) > 1; });
-        assert(found_docs.size() == 2);
-        assert(found_docs[0].id == 2);
-        assert(found_docs[1].id == 1);
+        ASSERT_EQUAL(found_docs.size(), 2);
+        ASSERT_EQUAL(found_docs[0].id, 2);
+        ASSERT_EQUAL(found_docs[1].id, 1);
     }
 
     {
@@ -457,8 +576,8 @@ void TestPredicateFiltering() {
         server.AddDocument(1, "d e f g k l m"s, DocumentStatus::BANNED, { 0, -30, 2 });
         server.AddDocument(2, "e f g z x"s, DocumentStatus::REMOVED, { 0, 31, 32 });
         const auto found_docs = server.FindTopDocuments("e"s, [](const int& id, const DocumentStatus& ds, const int& rating) {return ds == DocumentStatus::ACTUAL; });
-        assert(found_docs.size() == 1);
-        assert(found_docs[0].id == 43);
+        ASSERT_EQUAL(found_docs.size(), 1);
+        ASSERT_EQUAL(found_docs[0].id, 43);
     }
 
     {
@@ -470,8 +589,8 @@ void TestPredicateFiltering() {
         server.AddDocument(1, "d e f g k l m"s, DocumentStatus::BANNED, { 0, -30, 2 });
         server.AddDocument(2, "e f g z x"s, DocumentStatus::REMOVED, { 0, 31, 32 });
         const auto found_docs = server.FindTopDocuments("e"s, [](const int& id, const DocumentStatus& ds, const int& rating) {return rating < -5; });
-        assert(found_docs.size() == 1);
-        assert(found_docs[0].id == 1);
+        ASSERT_EQUAL(found_docs.size(), 1);
+        ASSERT_EQUAL(found_docs[0].id, 1);
     }
 }
 
@@ -490,9 +609,9 @@ void TestRelevanceComputing() {
         server.AddDocument(1, "d e f g k l m"s, DocumentStatus::ACTUAL, { 0, -30, 2 });
         server.AddDocument(2, "e f g z x"s, DocumentStatus::ACTUAL, { 0, 31, 32 });
         const auto found_docs = server.FindTopDocuments("e"s, [](const int& id, const DocumentStatus& ds, const int& rating) {return id > 1; });
-        assert(found_docs.size() == 2);
-        assert(abs(found_docs[0].relevance - 0.055786) < 1e-6);
-        assert(abs(found_docs[1].relevance - 0.044629) < 1e-6);
+        ASSERT_EQUAL(found_docs.size(), 2);
+        ASSERT(abs(found_docs[0].relevance - 0.055786) < 1e-6);
+        ASSERT(abs(found_docs[1].relevance - 0.044629) < 1e-6);
     }
 }
 
@@ -506,7 +625,6 @@ void TestSearchServer() {
     TestRating();
     TestPredicateFiltering();
     TestRelevanceComputing();
-    // Ќе забудьте вызывать остальные тесты здесь
 }
 
 // --------- ќкончание модульных тестов поисковой системы -----------
@@ -516,43 +634,3 @@ int main() {
     // ≈сли вы видите эту строку, значит все тесты прошли успешно
     cout << "Search server testing finished"s << endl;
 }
-
-/*
-// ==================== дл€ примера =========================
-
-
-void PrintDocument(const Document& document) {
-    cout << "{ "s
-        << "document_id = "s << document.id << ", "s
-        << "relevance = "s << document.relevance << ", "s
-        << "rating = "s << document.rating
-        << " }"s << endl;
-}
-
-int main() {
-    SearchServer search_server;
-    search_server.SetStopWords("и в на"s);
-
-    search_server.AddDocument(0, "белый кот и модный ошейник"s, DocumentStatus::ACTUAL, { 8, -3 });
-    search_server.AddDocument(1, "пушистый кот пушистый хвост"s, DocumentStatus::ACTUAL, { 7, 2, 7 });
-    search_server.AddDocument(2, "ухоженный пЄс выразительные глаза"s, DocumentStatus::ACTUAL, { 5, -12, 2, 1 });
-    search_server.AddDocument(3, "ухоженный скворец евгений"s, DocumentStatus::BANNED, { 9 });
-
-    cout << "ACTUAL by default:"s << endl;
-    for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный кот"s)) {
-        PrintDocument(document);
-    }
-
-    cout << "ACTUAL:"s << endl;
-    for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный кот"s, [](int document_id, DocumentStatus status, int rating) { return status == DocumentStatus::ACTUAL; })) {
-        PrintDocument(document);
-    }
-
-    cout << "Even ids:"s << endl;
-    for (const Document& document : search_server.FindTopDocuments("пушистый ухоженный кот"s, [](int document_id, DocumentStatus status, int rating) { return document_id % 2 == 0; })) {
-        PrintDocument(document);
-    }
-
-    return 0;
-}
-*/
