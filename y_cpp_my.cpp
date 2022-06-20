@@ -6,8 +6,10 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 using namespace std;
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
+
 string ReadLine() {
     string s;
     getline(cin, s);
@@ -23,20 +25,32 @@ vector<string> SplitIntoWords(const string& text) {
     vector<string> words;
     string word;
     for (const char c : text) {
-        if (c == ' ') {
+        if (c == ' ' && !word.empty()) {
             words.push_back(word);
             word = "";
         }
-        else {
+        else if (c != ' ') {
             word += c;
         }
     }
+
     words.push_back(word);
 
     return words;
 }
 
 struct Document {
+    explicit Document() {
+        id = 0;
+        relevance = 0.0;
+        rating = 0;
+    }
+
+    explicit Document(int doc_id, double doc_relevance, int doc_rating) {
+        id = doc_id;
+        relevance = doc_relevance;
+        rating = doc_rating;
+    }
     int id;
     double relevance;
     int rating;
@@ -49,9 +63,16 @@ enum class DocumentStatus {
 };
 class SearchServer {
 public:
-    void SetStopWords(const string& text) {
-        for (const string& word : SplitIntoWords(text)) {
+    explicit SearchServer(string sws) {
+        for (const string& word : SplitIntoWords(sws)) {
             stop_words_.insert(word);
+        }
+    }
+
+    template <typename StringContainer>
+    explicit SearchServer(const StringContainer& stop_words) {
+        for (const string& sw : stop_words) {
+            stop_words_.insert(sw);
         }
     }
 
@@ -224,7 +245,7 @@ private:
         }
         vector<Document> matched_documents;
         for (const auto [document_id, relevance] : document_to_relevance) {
-            matched_documents.push_back({
+            matched_documents.push_back(Document{
                 document_id,
                 relevance,
                 documents_.at(document_id).rating
@@ -242,8 +263,7 @@ void PrintDocument(const Document& document) {
         << " }"s << endl;
 }
 int main() {
-    SearchServer search_server;
-    search_server.SetStopWords("и в на"s);
+    SearchServer search_server("и в на"s);
     search_server.AddDocument(0, "белый кот и модный ошейник"s, DocumentStatus::ACTUAL, { 8, -3 });
     search_server.AddDocument(1, "пушистый кот пушистый хвост"s, DocumentStatus::ACTUAL, { 7, 2, 7 });
     search_server.AddDocument(2, "ухоженный пёс выразительные глаза"s, DocumentStatus::ACTUAL, { 5, -12, 2, 1 });
