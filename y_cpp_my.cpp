@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <optional>
 
 using namespace std;
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
@@ -100,17 +101,17 @@ public:
     }
 
     template <typename DocumentPredicate>
-    [[nodiscard]] bool FindTopDocuments(const string& raw_query, DocumentPredicate document_predicate, vector<Document>& result) const {
+    optional<vector<Document>> FindTopDocuments(const string& raw_query, DocumentPredicate document_predicate) const {
         Query query;
-        bool is_ok = true;
-        is_ok = ParseQuery(raw_query, query);
+        vector<Document> response;
+        bool is_ok = ParseQuery(raw_query, query);
         if (!is_ok) {
-            return is_ok;
+            return nullopt;
         }
         else {
-            result = FindAllDocuments(query, document_predicate);
+            response = FindAllDocuments(query, document_predicate);
 
-            sort(result.begin(), result.end(),
+            sort(response.begin(), response.end(),
                 [](const Document& lhs, const Document& rhs) {
                     if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
                         return lhs.rating > rhs.rating;
@@ -119,30 +120,30 @@ public:
                         return lhs.relevance > rhs.relevance;
                     }
                 });
-            if (result.size() > MAX_RESULT_DOCUMENT_COUNT) {
-                result.resize(MAX_RESULT_DOCUMENT_COUNT);
+            if (response.size() > MAX_RESULT_DOCUMENT_COUNT) {
+                response.resize(MAX_RESULT_DOCUMENT_COUNT);
             }
         }
-        return is_ok;
+        return response;
     }
 
-    [[nodiscard]] bool FindTopDocuments(const string& raw_query, DocumentStatus status, vector<Document>& result) const {
-        return FindTopDocuments(raw_query, [status](int document_id, DocumentStatus document_status, int rating) { return document_status == status; }, result);
+    optional<vector<Document>> FindTopDocuments(const string& raw_query, DocumentStatus status) const {
+        return FindTopDocuments(raw_query, [status](int document_id, DocumentStatus document_status, int rating) { return document_status == status; });
     }
 
-    [[nodiscard]] bool FindTopDocuments (const string& raw_query, vector<Document>& result) const {
-        return FindTopDocuments(raw_query, DocumentStatus::ACTUAL, result);
+    optional<vector<Document>> FindTopDocuments (const string& raw_query) const {
+        return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
     }
 
     int GetDocumentCount() const {
         return documents_.size();
     }
     
-    [[nodiscard]] bool MatchDocument(const string& raw_query, int document_id, tuple<vector<string>, DocumentStatus>& result) const {
+    optional<tuple<vector<string>, DocumentStatus>> MatchDocument(const string& raw_query, int document_id) const {
         Query query;
         bool is_ok = ParseQuery(raw_query, query);
         if (!is_ok) {
-            return is_ok;
+            return nullopt;
         }
         vector<string> matched_words;
         for (const string& word : query.plus_words) {
@@ -162,8 +163,8 @@ public:
                 break;
             }
         }
-        result = { matched_words, documents_.at(document_id).status };
-        return is_ok;
+        tuple<vector<string>, DocumentStatus> result = { matched_words, documents_.at(document_id).status };
+        return result;
     }
 
     int GetDocumentId(int index) const {
@@ -367,9 +368,9 @@ int main() {
     if (!search_server.AddDocument(5, "-\x13"s, DocumentStatus::ACTUAL, { 1, 3, 2 })) {
         cout << "Error: spec symbols are occuered"s << endl;
     }
-    vector<Document> documents;
-    if (search_server.FindTopDocuments("хвост человек-паук"s, documents)) {
-        for (const Document& document : documents) {
+    
+    if (auto documents = search_server.FindTopDocuments("хвост человек-паук"s)) {
+        for (const Document& document : *documents) {
             PrintDocument(document);
         }
     }
