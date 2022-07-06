@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <numeric>
 #include <cmath>
 #include <iostream>
 #include <map>
@@ -11,6 +12,7 @@
 
 using namespace std;
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
+const double EPSILON = 1e-6;
 
 string ReadLine() {
     string s;
@@ -104,7 +106,7 @@ public:
         response = FindAllDocuments(query, document_predicate);
         sort(response.begin(), response.end(),
             [](const Document& lhs, const Document& rhs) {
-                if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
+                if (abs(lhs.relevance - rhs.relevance) < EPSILON) {
                     return lhs.rating > rhs.rating;
                 }
                 else {
@@ -204,10 +206,7 @@ private:
         if (ratings.empty()) {
             return 0;
         }
-        int rating_sum = 0;
-        for (const int rating : ratings) {
-            rating_sum += rating;
-        }
+        int rating_sum = accumulate(ratings.begin(), ratings.end(), 0);
         return rating_sum / static_cast<int>(ratings.size());
     }
 
@@ -342,25 +341,25 @@ void AddDocument(SearchServer& search_server, int document_id, const string& doc
         search_server.AddDocument(document_id, document, status, ratings);
     }
     catch (const exception& e) {
-        cout << "Îøèáêà äîáàâëåíèÿ äîêóìåíòà "s << document_id << ": "s << e.what() << endl;
+        cout << "ÐžÑˆÐ¸Ð±ÐºÐ° Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð¸Ñ Ð´Ð¾ÐºÑƒÐ¼ÐµÐ½Ñ‚Ð° "s << document_id << ": "s << e.what() << endl;
     }
 }
 
 void FindTopDocuments(const SearchServer& search_server, const string& raw_query) {
-    cout << "Ðåçóëüòàòû ïîèñêà ïî çàïðîñó: "s << raw_query << endl;
+    cout << "Ð ÐµÐ·ÑƒÐ»ÑŒÑ‚Ð°Ñ‚Ñ‹ Ð¿Ð¾Ð¸ÑÐºÐ° Ð¿Ð¾ Ð·Ð°Ð¿Ñ€Ð¾ÑÑƒ: "s << raw_query << endl;
     try {
         for (const Document& document : search_server.FindTopDocuments(raw_query)) {
             PrintDocument(document);
         }
     }
     catch (const exception& e) {
-        cout << "Îøèáêà ïîèñêà: "s << e.what() << endl;
+        cout << "ÐžÑˆÐ¸Ð±ÐºÐ° Ð¿Ð¾Ð¸ÑÐºÐ°: "s << e.what() << endl;
     }
 }
 
 void MatchDocuments(const SearchServer& search_server, const string& query) {
     try {
-        cout << "Ìàò÷èíã äîêóìåíòîâ ïî çàïðîñó: "s << query << endl;
+        cout << "ÐœÐ°Ñ‚Ñ‡Ð¸Ð½Ð³ Ð´Ð¾ÐºÑƒÐ¼ÐµÐ½Ñ‚Ð¾Ð² Ð¿Ð¾ Ð·Ð°Ð¿Ñ€Ð¾ÑÑƒ: "s << query << endl;
         const int document_count = search_server.GetDocumentCount();
         for (int index = 0; index < document_count; ++index) {
             const int document_id = search_server.GetDocumentId(index);
@@ -369,25 +368,25 @@ void MatchDocuments(const SearchServer& search_server, const string& query) {
         }
     }
     catch (const exception& e) {
-        cout << "Îøèáêà ìàò÷èíãà äîêóìåíòîâ íà çàïðîñ "s << query << ": "s << e.what() << endl;
+        cout << "ÐžÑˆÐ¸Ð±ÐºÐ° Ð¼Ð°Ñ‚Ñ‡Ð¸Ð½Ð³Ð° Ð´Ð¾ÐºÑƒÐ¼ÐµÐ½Ñ‚Ð¾Ð² Ð½Ð° Ð·Ð°Ð¿Ñ€Ð¾Ñ "s << query << ": "s << e.what() << endl;
     }
 }
 
 int main() {
-    SearchServer search_server("è â íà"s);
+    SearchServer search_server("Ð¸ Ð² Ð½Ð°"s);
 
-    AddDocument(search_server, 1, "ïóøèñòûé êîò ïóøèñòûé õâîñò"s, DocumentStatus::ACTUAL, { 7, 2, 7 });
-    AddDocument(search_server, 1, "ïóøèñòûé ï¸ñ è ìîäíûé îøåéíèê"s, DocumentStatus::ACTUAL, { 1, 2 });
-    AddDocument(search_server, -1, "ïóøèñòûé ï¸ñ è ìîäíûé îøåéíèê"s, DocumentStatus::ACTUAL, { 1, 2 });
-    AddDocument(search_server, 3, "áîëüøîé ï¸ñ ñêâî\x12ðåö åâãåíèé"s, DocumentStatus::ACTUAL, { 1, 3, 2 });
-    AddDocument(search_server, 4, "áîëüøîé ï¸ñ ñêâîðåö åâãåíèé"s, DocumentStatus::ACTUAL, { 1, 1, 1 });
+    AddDocument(search_server, 1, "Ð¿ÑƒÑˆÐ¸ÑÑ‚Ñ‹Ð¹ ÐºÐ¾Ñ‚ Ð¿ÑƒÑˆÐ¸ÑÑ‚Ñ‹Ð¹ Ñ…Ð²Ð¾ÑÑ‚"s, DocumentStatus::ACTUAL, { 7, 2, 7 });
+    AddDocument(search_server, 1, "Ð¿ÑƒÑˆÐ¸ÑÑ‚Ñ‹Ð¹ Ð¿Ñ‘Ñ Ð¸ Ð¼Ð¾Ð´Ð½Ñ‹Ð¹ Ð¾ÑˆÐµÐ¹Ð½Ð¸Ðº"s, DocumentStatus::ACTUAL, { 1, 2 });
+    AddDocument(search_server, -1, "Ð¿ÑƒÑˆÐ¸ÑÑ‚Ñ‹Ð¹ Ð¿Ñ‘Ñ Ð¸ Ð¼Ð¾Ð´Ð½Ñ‹Ð¹ Ð¾ÑˆÐµÐ¹Ð½Ð¸Ðº"s, DocumentStatus::ACTUAL, { 1, 2 });
+    AddDocument(search_server, 3, "Ð±Ð¾Ð»ÑŒÑˆÐ¾Ð¹ Ð¿Ñ‘Ñ ÑÐºÐ²Ð¾\x12Ñ€ÐµÑ† ÐµÐ²Ð³ÐµÐ½Ð¸Ð¹"s, DocumentStatus::ACTUAL, { 1, 3, 2 });
+    AddDocument(search_server, 4, "Ð±Ð¾Ð»ÑŒÑˆÐ¾Ð¹ Ð¿Ñ‘Ñ ÑÐºÐ²Ð¾Ñ€ÐµÑ† ÐµÐ²Ð³ÐµÐ½Ð¸Ð¹"s, DocumentStatus::ACTUAL, { 1, 1, 1 });
 
-    FindTopDocuments(search_server, "ïóøèñòûé -ï¸ñ"s);
-    FindTopDocuments(search_server, "ïóøèñòûé --êîò"s);
-    FindTopDocuments(search_server, "ïóøèñòûé -"s);
+    FindTopDocuments(search_server, "Ð¿ÑƒÑˆÐ¸ÑÑ‚Ñ‹Ð¹ -Ð¿Ñ‘Ñ"s);
+    FindTopDocuments(search_server, "Ð¿ÑƒÑˆÐ¸ÑÑ‚Ñ‹Ð¹ --ÐºÐ¾Ñ‚"s);
+    FindTopDocuments(search_server, "Ð¿ÑƒÑˆÐ¸ÑÑ‚Ñ‹Ð¹ -"s);
 
-    MatchDocuments(search_server, "ïóøèñòûé ï¸ñ"s);
-    MatchDocuments(search_server, "ìîäíûé -êîò"s);
-    MatchDocuments(search_server, "ìîäíûé --ï¸ñ"s);
-    MatchDocuments(search_server, "ïóøèñòûé - õâîñò"s);
+    MatchDocuments(search_server, "Ð¿ÑƒÑˆÐ¸ÑÑ‚Ñ‹Ð¹ Ð¿Ñ‘Ñ"s);
+    MatchDocuments(search_server, "Ð¼Ð¾Ð´Ð½Ñ‹Ð¹ -ÐºÐ¾Ñ‚"s);
+    MatchDocuments(search_server, "Ð¼Ð¾Ð´Ð½Ñ‹Ð¹ --Ð¿Ñ‘Ñ"s);
+    MatchDocuments(search_server, "Ð¿ÑƒÑˆÐ¸ÑÑ‚Ñ‹Ð¹ - Ñ…Ð²Ð¾ÑÑ‚"s);
 }
