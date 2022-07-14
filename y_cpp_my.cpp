@@ -315,7 +315,81 @@ private:
     }
 };
 
+/*
+template <typename It>
+class Page {
+    //add default constructor
+    explicit Page(It begin, It end) {
+        p_.first = begin;
+        p_.second = end;
+    }
+public:
+    //auto begin() {//returns an iterator to the beginning }
+    //auto end() {//returns an iterator to the end }
+    //int size() {//returns number of elements, but what's for? }
+private:
+    pair<It, It> p_;
+};
+*/
+
+template <typename It>
+class Paginator {
+    //можем получить контейнер с результатами, а потом на основе него создать вектор диапазонов, где 
+    //диапазон будет просто парой итераторов. Первый итератор укажет на начало страницы, а второй — на её конец.
+public:
+    explicit Paginator(It begin, It end, size_t page_size) {
+        auto iit = begin;
+        bool next = true;
+        while (distance(begin, end) > 0 && next) {
+            if (distance(begin, end) > page_size) {
+                advance(iit, page_size);
+                result_pages_.push_back(pair{ begin, iit });
+                advance(begin, page_size);
+            } 
+            else if (distance(begin, end) == page_size) {
+                result_pages_.push_back(pair{ begin, end });
+                next = false;
+            } 
+            else if (distance(begin, end) < page_size) {
+                result_pages_.push_back(pair{ begin, end });
+                next = false;
+            }
+        }
+        
+    }
+
+
+    auto begin() const {
+        /*returns an iterator to the beginning */
+        return result_pages_.begin();
+    }
+    auto end() const  {
+        /*returns an iterator to the end*/ 
+        return result_pages_.end();
+    }
+    auto size() const  {
+        return distance(result_pages_.end(), result_pages_.begin());
+    }
+private:
+    vector<pair<It, It>> result_pages_;
+};
+
 //******************************
+
+ostream& operator<<(ostream& output, Document document) {
+    return output << "{ "s
+        << "document_id = "s << document.id << ", "s
+        << "relevance = "s << document.relevance << ", "s
+        << "rating = "s << document.rating << " }"s;
+}
+
+template <typename It>
+ostream& operator<<(ostream& output, pair<It, It> p) {
+    for (auto doc = p.first; doc != p.second; ++doc) {
+        output << *doc;
+    }
+    return output;
+}
 
 void PrintDocument(const Document& document) {
     cout << "{ "s
@@ -372,9 +446,14 @@ void MatchDocuments(const SearchServer& search_server, const string& query) {
     }
 }
 
+template <typename Container>
+auto Paginate(const Container& c, size_t page_size) {
+    return Paginator(begin(c), end(c), page_size);
+}
+
 int main() {
     SearchServer search_server("и в на"s);
-
+    /*
     AddDocument(search_server, 1, "пушистый кот пушистый хвост"s, DocumentStatus::ACTUAL, { 7, 2, 7 });
     AddDocument(search_server, 1, "пушистый пёс и модный ошейник"s, DocumentStatus::ACTUAL, { 1, 2 });
     AddDocument(search_server, -1, "пушистый пёс и модный ошейник"s, DocumentStatus::ACTUAL, { 1, 2 });
@@ -389,4 +468,24 @@ int main() {
     MatchDocuments(search_server, "модный -кот"s);
     MatchDocuments(search_server, "модный --пёс"s);
     MatchDocuments(search_server, "пушистый - хвост"s);
+    */
+    // ******new in 4th sprint
+
+    AddDocument(search_server, 10, "funny pet and nasty rat"s, DocumentStatus::ACTUAL, {7, 2, 7});
+    AddDocument(search_server, 11, "funny pet with curly hair"s, DocumentStatus::ACTUAL, {1, 2, 3});
+    AddDocument(search_server, 12, "big cat nasty hair"s, DocumentStatus::ACTUAL, {1, 2, 8});
+    AddDocument(search_server, 13, "big dog cat Vladislav"s, DocumentStatus::ACTUAL, {1, 3, 2});
+    AddDocument(search_server, 14, "big dog hamster Borya"s, DocumentStatus::ACTUAL, {1, 1, 1});
+
+    const auto search_results = search_server.FindTopDocuments("curly dog"s);
+
+    //for (auto d : search_results) { PrintDocument(d); }
+
+    int page_size = 2;
+    const auto pages = Paginate(search_results, page_size);
+    // Выводим найденные документы по страницам
+    for (auto page = pages.begin(); page != pages.end(); ++page) {
+        cout << *page << endl;
+        cout << "Page break"s << endl;
+    }
 }
