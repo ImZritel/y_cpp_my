@@ -1,16 +1,16 @@
 #include "search_server.h"
-
+using namespace std::string_literals;
 
 SearchServer::SearchServer(std::string sws) {
     for (const std::string& word : SplitIntoWords(sws)) {
-        if (!IsValidWord(word)) { throw std::invalid_argument("Error: invalid word."); }
+        if (!IsValidWord(word)) { throw std::invalid_argument("Error: invalid word."s); }
         stop_words_.insert(word);
     }
 }
 
 void SearchServer::AddDocument(int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings) {
     std::vector<std::string> words = SplitIntoWordsNoStop(document);
-    if (document_id < 0 || documents_.count(document_id) > 0) { throw std::invalid_argument("Error: doc id is negative or duplicate already existing id."); }
+    if (document_id < 0 || documents_.count(document_id) > 0) { throw std::invalid_argument("Error: doc id is negative or duplicate already existing id."s); }
     else {
         added_doc_ids_.push_back(document_id);
         const double inv_word_count = 1.0 / words.size();
@@ -64,7 +64,7 @@ std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument
 int SearchServer::GetDocumentId(int index) const {
     //what is this method for??
     if (index >= added_doc_ids_.size()) {
-        throw std::out_of_range("Error: index is out of range.");
+        throw std::out_of_range("Error: index is out of range."s);
     }
     else {
         return added_doc_ids_[index];
@@ -90,7 +90,7 @@ std::vector<std::string> SearchServer::SplitIntoWordsNoStop(const std::string& t
                 words.push_back(word);
             }
             else {
-                throw std::invalid_argument("Error: invalid word in a document.");
+                throw std::invalid_argument("Error: invalid word in a document."s);
             }
         }
 
@@ -113,7 +113,7 @@ SearchServer::QueryWord SearchServer::ParseQueryWord(std::string text) const {
     if (text.size() > 0) {
         if (text[0] == '-') {
             if (text.size() == 1 || text[1] == '-') {
-                throw std::invalid_argument("Error: word length is less than 1 or wrong '-' usage.");
+                throw std::invalid_argument("Error: word length is less than 1 or wrong '-' usage."s);
             }
             else {
                 is_minus = true;
@@ -143,7 +143,7 @@ SearchServer::Query SearchServer::ParseQuery(const std::string& text) const {
         query_word = ParseQueryWord(word);
         if (!query_word.is_stop) {
             if (!IsValidWord(query_word.data)) {
-                throw std::invalid_argument("Error: invalid word in query.");
+                throw std::invalid_argument("Error: invalid word in query."s);
             }
             else {
                 if (query_word.is_minus) {

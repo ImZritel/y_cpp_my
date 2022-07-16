@@ -1,6 +1,7 @@
 #pragma once
 #include "document.h"
 #include "search_server.h"
+#include "paginator.h"
 #include <iostream>
 #include <string>
 #include <vector>

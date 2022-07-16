@@ -10,6 +10,8 @@
 #include <map>
 #include <cmath>
 
+using namespace std::string_literals;
+
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
 const double EPSILON = 1e-6;
 
@@ -20,7 +22,7 @@ public:
     template <typename stringContainer>
     explicit SearchServer(const stringContainer& stop_words) {
         for (const std::string& sw : stop_words) {
-            if (!IsValidWord(sw)) { throw std::invalid_argument("Error: invalid word."); }
+            if (!IsValidWord(sw)) { throw std::invalid_argument("Error: invalid word."s); }
             stop_words_.insert(sw);
         }
     }
@@ -32,9 +34,9 @@ public:
         std::vector<Document> response;
         Query query = ParseQuery(raw_query);
         response = FindAllDocuments(query, document_predicate);
-        sort(response.begin(), response.end(),
+        std::sort(response.begin(), response.end(),
             [](const Document& lhs, const Document& rhs) {
-                if (abs(lhs.relevance - rhs.relevance) < EPSILON) {
+                if (std::abs(lhs.relevance - rhs.relevance) < EPSILON) {
                     return lhs.rating > rhs.rating;
                 }
                 else {
