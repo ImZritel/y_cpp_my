@@ -2,13 +2,6 @@
 
 using namespace std::string_literals;
 
-std::ostream& operator<<(std::ostream& output, Document document) {
-    return output << "{ "s
-        << "document_id = "s << document.id << ", "s
-        << "relevance = "s << document.relevance << ", "s
-        << "rating = "s << document.rating << " }"s;
-}
-
 void PrintDocument(const Document& document) {
     std::cout << "{ "s
         << "document_id = "s << document.id << ", "s

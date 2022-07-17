@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 struct Document {
     explicit Document();
     explicit Document(int doc_id, double doc_relevance, int doc_rating);
@@ -15,3 +17,5 @@ enum class DocumentStatus {
     BANNED,
     REMOVED,
 };
+
+std::ostream& operator<<(std::ostream& output, Document document);

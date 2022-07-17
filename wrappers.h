@@ -11,8 +11,6 @@
 
 using namespace std::string_literals;
 
-std::ostream& operator<<(std::ostream& output, Document document);
-
 template <typename It>
 std::ostream& operator<<(std::ostream& output, std::pair<It, It> p) {
     for (auto doc = p.first; doc != p.second; ++doc) {
