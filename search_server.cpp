@@ -1,9 +1,12 @@
 #include "search_server.h"
+
 using namespace std::string_literals;
 
 SearchServer::SearchServer(std::string sws) {
     for (const std::string& word : SplitIntoWords(sws)) {
-        if (!IsValidWord(word)) { throw std::invalid_argument("Error: invalid word."s); }
+        if (!IsValidWord(word)) { 
+            throw std::invalid_argument("Error: invalid word."s); 
+        }
         stop_words_.insert(word);
     }
 }
@@ -28,7 +31,6 @@ void SearchServer::AddDocument(int document_id, const std::string& document, Doc
 std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_query, DocumentStatus status) const {
     return FindTopDocuments(raw_query, [status](int document_id, DocumentStatus document_status, int rating) { return document_status == status; });
 }
-
 std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_query) const {
     return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
 }
@@ -37,7 +39,7 @@ int SearchServer::GetDocumentCount() const {
     return documents_.size();
 }
 
-std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument(const std::string& raw_query, int document_id) const {
+SearchServer::MatchingDocs SearchServer::MatchDocument(const std::string& raw_query, int document_id) const {
     Query query = ParseQuery(raw_query);
     std::vector<std::string> matched_words;
     for (const std::string& word : query.plus_words) {
@@ -57,8 +59,7 @@ std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument
             break;
         }
     }
-    std::tuple<std::vector<std::string>, DocumentStatus> result = { matched_words, documents_.at(document_id).status };
-    return result;
+    return { matched_words, documents_.at(document_id).status };
 }
 
 int SearchServer::GetDocumentId(int index) const {
