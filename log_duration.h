@@ -9,7 +9,6 @@ using namespace std::string_literals;
 #define PROFILE_CONCAT(X, Y) PROFILE_CONCAT_INTERNAL(X, Y)
 #define UNIQUE_VAR_NAME_PROFILE PROFILE_CONCAT(profileGuard, __LINE__)
 #define LOG_DURATION_STREAM(x, stream) LogDuration UNIQUE_VAR_NAME_PROFILE(x, stream)
-#define LOG_DURATION_STREAM(x) LogDuration UNIQUE_VAR_NAME_PROFILE(x)
 
 class LogDuration {
 public:
