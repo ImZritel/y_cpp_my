@@ -4,6 +4,7 @@
 #include "search_server.h"
 #include "string_processing.h"
 #include "wrappers.h"
+#include "log_duration.h"
 
 #include <iostream>
 using namespace std;
@@ -30,7 +31,16 @@ int main() {
     std::cout << "Total empty requests: "s << request_queue.GetNoResultRequests() << std::endl;
 
     auto results = search_server.FindTopDocuments("cat");
-    for (auto doc : results) { PrintDocument(doc); }
-    MatchDocuments(search_server, "cat");
+    for (const auto& doc : results) { 
+        PrintDocument(doc); 
+    }
+    {
+        LogDuration h("Operation time"s);
+        MatchDocuments(search_server, "cat");
+    }
+    {
+        LOG_DURATION_STREAM("Operation time"s, std::cout);
+        MatchDocuments(search_server, "cat");
+    }
     return 0;
 }
