@@ -19,6 +19,7 @@ void SearchServer::AddDocument(int document_id, const std::string& document, Doc
         const double inv_word_count = 1.0 / words.size();
         for (const std::string& word : words) {
             word_to_document_freqs_[word][document_id] += inv_word_count;
+            docid_word_freqs_[document_id][word] += inv_word_count;
         }
         documents_.emplace(document_id,
             DocumentData{
@@ -62,13 +63,33 @@ SearchServer::MatchingDocs SearchServer::MatchDocument(const std::string& raw_qu
     return { matched_words, documents_.at(document_id).status };
 }
 
-int SearchServer::GetDocumentId(int index) const {
-    //what is this method for??
-    if (index >= added_doc_ids_.size()) {
-        throw std::out_of_range("Error: index is out of range."s);
+std::vector<int>::const_iterator SearchServer::begin() const {
+    return added_doc_ids_.begin();
+}
+
+std::vector<int>::const_iterator SearchServer::end() const {
+    return added_doc_ids_.end();
+}
+
+const std::map<std::string, double>& SearchServer::GetWordFrequencies(int document_id) const {
+    static std::map<std::string, double> f{};
+    if (!docid_word_freqs_.count(document_id)) {
+        return f;
     }
-    else {
-        return added_doc_ids_[index];
+    return docid_word_freqs_.at(document_id);
+}
+
+void SearchServer::RemoveDocument(int document_id) {
+    if (docid_word_freqs_.count(document_id)) {
+        for (auto wf : docid_word_freqs_.at(document_id)) {
+            word_to_document_freqs_.at(wf.first).erase(document_id);
+        }
+        docid_word_freqs_.erase(document_id);
+        documents_.erase(document_id);
+        auto pos = find(added_doc_ids_.begin(), added_doc_ids_.end(), document_id);
+        added_doc_ids_.erase(pos);
+    } else {
+        throw std::invalid_argument("Error: no document with such id."s);
     }
 }
 

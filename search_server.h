@@ -43,7 +43,10 @@ public:
     using MatchingDocs = std::tuple<std::vector<std::string>, DocumentStatus>;
     MatchingDocs MatchDocument(const std::string& raw_query, int document_id) const;
 
-    int GetDocumentId(int index) const;
+    std::vector<int>::const_iterator begin() const;
+    std::vector<int>::const_iterator end() const;
+    const std::map<std::string, double>& GetWordFrequencies(int document_id) const;
+    void RemoveDocument(int document_id);
 
 private:
     struct DocumentData {
@@ -51,9 +54,10 @@ private:
         DocumentStatus status;
     };
     std::set<std::string> stop_words_;
-    std::map<std::string, std::map<int, double>> word_to_document_freqs_;
-    std::map<int, DocumentData> documents_;
-    std::vector<int> added_doc_ids_;
+    std::map<std::string, std::map<int, double>> word_to_document_freqs_;   // INDEX word: {doc_id: word_frequency}
+    std::map<int, std::map<std::string, double>> docid_word_freqs_;    // INDEX doc_id: {word: frequency}
+    std::map<int, DocumentData> documents_;    // doc's id: {rating, status}
+    std::vector<int> added_doc_ids_;    // doc_ids
 
     bool IsStopWord(const std::string& word) const;
 
@@ -140,3 +144,5 @@ std::vector<Document> SearchServer::FindAllDocuments(const Query& query, Documen
     }
     return matched_documents;
 }
+
+void RemoveDuplicates(SearchServer& search_server);
