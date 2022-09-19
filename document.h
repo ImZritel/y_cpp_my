@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 
 struct Document {
     explicit Document();
@@ -19,3 +20,15 @@ enum class DocumentStatus {
 };
 
 std::ostream& operator<<(std::ostream& output, Document document);
+
+template <typename It>
+std::ostream& operator<<(std::ostream& output, std::pair<It, It> p) {
+    for (auto doc = p.first; doc != p.second; ++doc) {
+        output << *doc;
+    }
+    return output;
+}
+
+void PrintDocument(const Document& document);
+
+void PrintMatchDocumentResult(int document_id, const std::vector<std::string>& words, DocumentStatus status);

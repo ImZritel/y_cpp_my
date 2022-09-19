@@ -112,7 +112,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level1</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -141,7 +141,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="document.cpp" />
+    <ClCompile Include="process_queries.cpp" />
+    <ClCompile Include="read_input_functions.cpp" />
+    <ClCompile Include="remove_duplicates.cpp" />
+    <ClCompile Include="request_queue.cpp" />
+    <ClCompile Include="search_server.cpp" />
+    <ClCompile Include="string_processing.cpp" />
+    <ClCompile Include="wrappers.cpp" />
     <ClCompile Include="y_cpp_my.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="document.h" />
+    <ClInclude Include="log_duration.h" />
+    <ClInclude Include="paginator.h" />
+    <ClInclude Include="process_queries.h" />
+    <ClInclude Include="read_input_functions.h" />
+    <ClInclude Include="remove_duplicates.h" />
+    <ClInclude Include="request_queue.h" />
+    <ClInclude Include="search_server.h" />
+    <ClInclude Include="string_processing.h" />
+    <ClInclude Include="wrappers.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
