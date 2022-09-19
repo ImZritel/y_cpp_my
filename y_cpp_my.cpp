@@ -3,7 +3,6 @@
 #include "request_queue.h"
 #include "search_server.h"
 #include "string_processing.h"
-#include "wrappers.h"
 #include "log_duration.h"
 #include "remove_duplicates.h"
 #include "process_queries.h"
