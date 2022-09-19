@@ -30,9 +30,6 @@
     <ClCompile Include="search_server.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="wrappers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="read_input_functions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -57,9 +54,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="string_processing.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wrappers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="read_input_functions.h">
