@@ -8,7 +8,12 @@
 #include "process_queries.h"
 
 #include <iostream>
+
+
+#include <random>   //          ********8th sprint
 using namespace std;
+
+
 int main() {
     SearchServer search_server("and with"s);
     int id = 0;
@@ -29,9 +34,7 @@ int main() {
         "curly hair"s
     };
     id = 0;
-    for (
-        const auto& documents : ProcessQueries(search_server, queries)
-        ) {
+    for (const auto& documents : ProcessQueries(search_server, queries)) {
         cout << documents.size() << " documents for query ["s << queries[id++] << "]"s << endl;
     }
     return 0;
