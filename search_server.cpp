@@ -1,5 +1,7 @@
 #include "search_server.h"
 
+#include <execution>
+
 using namespace std::string_literals;
 
 SearchServer::SearchServer(std::string sws) {
@@ -79,15 +81,38 @@ const std::map<std::string, double>& SearchServer::GetWordFrequencies(int docume
     return docid_word_freqs_.at(document_id);
 }
 
+void SearchServer::RemoveDocument(std::execution::parallel_policy ex, int document_id) {
+    if (!docid_word_freqs_.count(document_id)) {
+        throw std::invalid_argument("Error: no document with such id."s);
+    }
+    std::vector<std::string> words_v(docid_word_freqs_.at(document_id).size());
+    std::transform(std::execution::par,
+        docid_word_freqs_.at(document_id).begin(), docid_word_freqs_.at(document_id).end(),
+        words_v.begin(),
+        [this](const auto& pair) {return pair.first; });    // get the right words
+    std::for_each(std::execution::par, words_v.begin(), words_v.end(),
+        [this, document_id](auto ptr) {word_to_document_freqs_.at(ptr).erase(document_id); });
+
+    auto pos = find(std::execution::par, added_doc_ids_.begin(), added_doc_ids_.end(), document_id);
+    added_doc_ids_.erase(pos);
+
+    docid_word_freqs_.erase(document_id);
+    documents_.erase(document_id);
+}
+
+void SearchServer::RemoveDocument(std::execution::sequenced_policy ex, int document_id) {
+    for (auto wf : docid_word_freqs_.at(document_id)) {
+        word_to_document_freqs_.at(wf.first).erase(document_id);
+    }
+    docid_word_freqs_.erase(document_id);
+    documents_.erase(document_id);
+    auto pos = find(added_doc_ids_.begin(), added_doc_ids_.end(), document_id);
+    added_doc_ids_.erase(pos);
+}
+
 void SearchServer::RemoveDocument(int document_id) {
     if (docid_word_freqs_.count(document_id)) {
-        for (auto wf : docid_word_freqs_.at(document_id)) {
-            word_to_document_freqs_.at(wf.first).erase(document_id);
-        }
-        docid_word_freqs_.erase(document_id);
-        documents_.erase(document_id);
-        auto pos = find(added_doc_ids_.begin(), added_doc_ids_.end(), document_id);
-        added_doc_ids_.erase(pos);
+        RemoveDocument(std::execution::seq, document_id);
     } else {
         throw std::invalid_argument("Error: no document with such id."s);
     }
