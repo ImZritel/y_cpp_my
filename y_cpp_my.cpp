@@ -13,7 +13,6 @@
 #include <random>   //          ********8th sprint
 using namespace std;
 
-
 int main() {
     SearchServer search_server("and with"s);
     int id = 0;

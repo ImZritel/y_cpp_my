@@ -43,11 +43,6 @@ private:
         bool is_minus;
         bool is_stop;
     };
-    /*
-    enum struct execution {
-        seq,
-        par
-    };*/
 
     QueryWord ParseQueryWord(std::string text) const;
 
