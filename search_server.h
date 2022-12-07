@@ -33,8 +33,10 @@ private:
     bool IsStopWord(const std::string& word) const;
 
     static bool IsValidWord(const std::string& word);
+    bool IsValidWord(std::execution::parallel_policy ex, const std::string& word);
 
     std::vector<std::string> SplitIntoWordsNoStop(const std::string& text) const;
+    std::vector<std::string> SplitIntoWordsNoStop(std::execution::parallel_policy, const std::string& text) const;
 
     static int ComputeAverageRating(const std::vector<int>& ratings);
 
@@ -82,6 +84,8 @@ public:
 
     using MatchingDocs = std::tuple<std::vector<std::string>, DocumentStatus>;
     MatchingDocs MatchDocument(const std::string& raw_query, int document_id) const;
+    MatchingDocs MatchDocument(std::execution::parallel_policy ex, const std::string& raw_query, int document_id) const;
+    MatchingDocs MatchDocument(std::execution::sequenced_policy ex, const std::string& raw_query, int document_id) const;
 
     std::vector<int>::const_iterator begin() const;
     std::vector<int>::const_iterator end() const;
