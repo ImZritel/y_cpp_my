@@ -33,7 +33,6 @@ private:
     bool IsStopWord(const std::string& word) const;
 
     static bool IsValidWord(const std::string& word);
-    bool IsValidWord(std::execution::parallel_policy ex, const std::string& word);
 
     std::vector<std::string> SplitIntoWordsNoStop(const std::string& text) const;
     std::vector<std::string> SplitIntoWordsNoStop(std::execution::parallel_policy, const std::string& text) const;
