@@ -1,5 +1,5 @@
 #include "search_server.h"
-
+#include "process_queries.h"
 #include <execution>
 #include <iostream>
 #include <random>
