@@ -71,13 +71,13 @@ public:
     template <typename stringContainer>
     explicit SearchServer(const stringContainer& stop_words) {
         for (const std::string& sw : stop_words) {
-            if (!IsValidWord(sw)) { 
-                throw std::invalid_argument("Error: invalid word."s); 
+            if (!IsValidWord(sw)) {
+                throw std::invalid_argument("Error: invalid word."s);
             }
             stop_words_.insert(sw);
         }
     }
-    
+
 
     //void AddDocument(int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings);
     void AddDocument(int document_id, const std::string_view document, DocumentStatus status, const std::vector<int>& ratings);
@@ -94,9 +94,9 @@ public:
     int GetDocumentCount() const;
 
     using MatchingDocs = std::tuple<std::vector<std::string>, DocumentStatus>;
-   // MatchingDocs MatchDocument(const std::string& raw_query, int document_id) const;
-    //MatchingDocs MatchDocument(std::execution::parallel_policy ex, const std::string& raw_query, int document_id) const;
-    //MatchingDocs MatchDocument(std::execution::sequenced_policy ex, const std::string& raw_query, int document_id) const;
+    // MatchingDocs MatchDocument(const std::string& raw_query, int document_id) const;
+     //MatchingDocs MatchDocument(std::execution::parallel_policy ex, const std::string& raw_query, int document_id) const;
+     //MatchingDocs MatchDocument(std::execution::sequenced_policy ex, const std::string& raw_query, int document_id) const;
     using MatchingDocs_sv = std::tuple<std::vector<std::string_view>, DocumentStatus>;
     MatchingDocs_sv MatchDocument(const std::string_view raw_query, int document_id) const;
     MatchingDocs_sv MatchDocument(std::execution::parallel_policy ex, const std::string_view raw_query, int document_id) const;

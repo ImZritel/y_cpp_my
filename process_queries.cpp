@@ -24,7 +24,7 @@ std::vector<std::vector<Document>> ProcessQueries(
     for (int i{ 0 }; i < queries.size(); ++i) {
         sv_q[i] = std::string_view(queries[i].data(), queries[i].size());
     }
-    
+
     return ProcessQueries(search_server, sv_q);
 }
 
@@ -45,7 +45,7 @@ std::vector<Document> ProcessQueriesJoined(
     const SearchServer& search_server,
     const std::vector<std::string>& queries) {
     std::vector<Document> result;
-    
+
     for (auto v1_el : ProcessQueries(search_server, queries)) {
         for (auto v2_el : v1_el) {
             result.push_back(std::move(v2_el));
