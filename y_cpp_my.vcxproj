@@ -151,6 +151,7 @@
     <ClCompile Include="y_cpp_my.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="concurrent_map.h" />
     <ClInclude Include="document.h" />
     <ClInclude Include="log_duration.h" />
     <ClInclude Include="paginator.h" />
@@ -160,6 +161,7 @@
     <ClInclude Include="request_queue.h" />
     <ClInclude Include="search_server.h" />
     <ClInclude Include="string_processing.h" />
+    <ClInclude Include="test_framework.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

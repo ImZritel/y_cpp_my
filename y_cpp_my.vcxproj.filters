@@ -68,5 +68,11 @@
     <ClInclude Include="process_queries.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="concurrent_map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="test_framework.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
