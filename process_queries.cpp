@@ -21,9 +21,10 @@ std::vector<std::vector<Document>> ProcessQueries(
     const SearchServer& search_server,
     const std::vector<std::string>& queries) {
     std::vector<std::string_view > sv_q(queries.size());
-    for (int i{ 0 }; i < queries.size(); ++i) {
+    /*for (int i{ 0 }; i < queries.size(); ++i) {
         sv_q[i] = std::string_view(queries[i].data(), queries[i].size());
-    }
+    }*/
+    std::transform(std::execution::par, queries.begin(), queries.end(), sv_q.begin(), [](const auto& str) {return std::string_view(str);});
 
     return ProcessQueries(search_server, sv_q);
 }

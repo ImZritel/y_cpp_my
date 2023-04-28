@@ -4,17 +4,9 @@
 
 using namespace std::string_literals;
 
-SearchServer::SearchServer(std::string sws) {
-    for (const std::string word : SplitIntoWords(sws)) {
-        if (!IsValidWord(word)) {
-            throw std::invalid_argument("Error: invalid word (string constructor)."s);
-        }
-        stop_words_.insert(word);
-    }
-}
+SearchServer::SearchServer(std::string sws) : SearchServer(std::string_view(sws)) {}
 SearchServer::SearchServer(std::string_view swsv) {
-    std::string sws = std::string(swsv);
-    for (const auto word : SplitIntoWords(sws)) {
+    for (const auto word : SplitIntoWords(swsv)) {
         if (!IsValidWord(word)) {
             throw std::invalid_argument("Error: invalid word (string_view constructor)."s);
         }
@@ -32,7 +24,7 @@ void SearchServer::AddDocument(int document_id, const std::string_view document,
                 std::string(document)
             });
         std::vector<std::string_view> words = SplitIntoWordsNoStop(std::string_view(documents_.at(document_id).content));
-        added_doc_ids_.push_back(document_id);
+        added_doc_ids_.insert(document_id);
         const double inv_word_count = 1.0 / words.size();
         for (const std::string_view word : words) {
             word_to_document_freqs_[word][document_id] += inv_word_count;
@@ -49,10 +41,10 @@ std::vector<Document> SearchServer::FindTopDocuments(const std::string_view raw_
 }
 //par
 std::vector<Document> SearchServer::FindTopDocuments(const std::execution::parallel_policy&, const std::string_view raw_query, DocumentStatus status) const {
-    return FindTopDocuments(std::execution::par, raw_query, [status](int document_id, DocumentStatus document_status, int rating) { return document_status == status; });
+    return FindTopDocuments(std::execution::par, raw_query, [&status](int document_id, DocumentStatus document_status, int rating) { return document_status == status; });
 }
 std::vector<Document> SearchServer::FindTopDocuments(const std::execution::parallel_policy&, const std::string_view raw_query) const {
-    return FindTopDocuments(std::execution::par, raw_query, DocumentStatus::ACTUAL);
+    return FindTopDocuments(std::execution::par, raw_query, [](int document_id, DocumentStatus document_status, int rating) { return document_status == DocumentStatus::ACTUAL; });
 }
 //seq
 std::vector<Document> SearchServer::FindTopDocuments(const std::execution::sequenced_policy&, const std::string_view raw_query, DocumentStatus status) const {
@@ -69,7 +61,7 @@ int SearchServer::GetDocumentCount() const {
 SearchServer::MatchingDocs_sv SearchServer::MatchDocument(const std::string_view raw_query, int document_id) const {
     return MatchDocument(std::execution::seq, raw_query, document_id);
 }
-SearchServer::MatchingDocs_sv SearchServer::MatchDocument(std::execution::sequenced_policy ex, const std::string_view raw_query, int document_id) const {
+SearchServer::MatchingDocs_sv SearchServer::MatchDocument(const std::execution::sequenced_policy&, const std::string_view raw_query, int document_id) const {
     Query query = ParseQuery(raw_query);
     std::vector<std::string_view> matched_words;
     if (!docid_word_freqs_.count(document_id)) {
@@ -93,7 +85,8 @@ SearchServer::MatchingDocs_sv SearchServer::MatchDocument(std::execution::sequen
     return { matched_words, documents_.at(document_id).status };
 }
 
-SearchServer::MatchingDocs_sv SearchServer::MatchDocument(std::execution::parallel_policy ex, const std::string_view raw_query, int document_id) const {
+/*Returns MatchingDocs_sv (that is words, doc status) that exists in both: the query and doc(id).*/
+SearchServer::MatchingDocs_sv SearchServer::MatchDocument(const std::execution::parallel_policy&, const std::string_view raw_query, int document_id) const {
     if (!docid_word_freqs_.count(document_id)) {
         throw std::out_of_range("out_of_range in MatchDocument ");
     }
@@ -120,11 +113,11 @@ SearchServer::MatchingDocs_sv SearchServer::MatchDocument(std::execution::parall
 }
 
 
-std::vector<int>::const_iterator SearchServer::begin() const {
+std::set<int>::const_iterator SearchServer::begin() const {
     return added_doc_ids_.begin();
 }
 
-std::vector<int>::const_iterator SearchServer::end() const {
+std::set<int>::const_iterator SearchServer::end() const {
     return added_doc_ids_.end();
 }
 
@@ -280,13 +273,19 @@ SearchServer::Query SearchServer::ParseQuery(const std::string_view text) const 
     std::for_each(words.begin(), words.end(), [this, &result](const auto& word) {QueryWord query_word = ParseQueryWord(word);
     if (!query_word.is_stop) {
         if (IsValidWord(query_word.data)) {
-            query_word.is_minus ? result.minus_words.insert(query_word.data) : result.plus_words.insert(query_word.data);
+            query_word.is_minus ? result.minus_words.push_back(query_word.data) : result.plus_words.push_back(query_word.data);
         }
         else {
             throw std::invalid_argument("Error: invalid word (ParseQuery)."s);
         }
     }
         });
+    std::sort(result.minus_words.begin(), result.minus_words.end());
+    std::sort(result.plus_words.begin(), result.plus_words.end());
+    const auto mw_end = std::unique(result.minus_words.begin(), result.minus_words.end());
+    result.minus_words.resize(mw_end - result.minus_words.begin());
+    const auto pw_end = std::unique(result.plus_words.begin(), result.plus_words.end());
+    result.plus_words.resize(pw_end - result.plus_words.begin());
     return result;
 }
 
@@ -323,7 +322,7 @@ void MatchDocuments(const SearchServer& search_server, const std::string_view qu
         std::cout << "Матчинг документов по запросу: "s << query << std::endl;
         const int document_count = search_server.GetDocumentCount();
         for (int index = 0; index < document_count; ++index) {
-            const int document_id = *(search_server.begin() + index);
+            const int document_id = *(std::next(search_server.begin(), index));
             const auto [words, status] = search_server.MatchDocument(query, document_id);
             PrintMatchDocumentResult(document_id, words, status);
         }
