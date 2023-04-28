@@ -163,7 +163,7 @@ void SearchServer::RemoveDocument(int document_id) {
 }
 
 bool SearchServer::IsStopWord(const std::string_view word) const {
-    return stop_words_.count(std::string(word)) > 0;
+    return stop_words_.count(word) > 0;
 }
 
 bool SearchServer::IsValidWord(const std::string& word) {

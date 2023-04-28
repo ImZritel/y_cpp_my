@@ -27,7 +27,7 @@ private:
         DocumentStatus status;
         std::string content;
     };
-    std::set<std::string> stop_words_;
+    std::set<std::string, std::less<>> stop_words_;
     std::map<std::string_view, std::map<int, double>> word_to_document_freqs_;   // INDEX word: {doc_id: word_frequency}
     std::map<int, std::map<std::string_view, double>> docid_word_freqs_;    // INDEX doc_id: {word: frequency}
     std::map<int, DocumentData> documents_;    // doc's id: {rating, status}
